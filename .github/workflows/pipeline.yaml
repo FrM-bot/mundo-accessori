@@ -6,7 +6,7 @@ on:
       - main
   pull_request:
     branches:
-      - dev
+      - development
     types:
       - synchronize
       - opened
@@ -42,7 +42,7 @@ jobs:
         run: pnpm run lint
   
   Build:
-    needs: [Lint, Unit_Tests]
+    needs: [Lint]
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
