@@ -1,0 +1,99 @@
+name: Deployment
+run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - dev
+    types:
+      - synchronize
+      - opened
+
+jobs:
+  Avoid_reduncy:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          access_token: ${{ github.token }}
+
+  Lint:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 7.26.3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run Linter
+        run: pnpm run lint
+  
+  Build:
+    needs: [Lint, Unit_Tests]
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 7.26.3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build
+      
+      - uses: actions/upload-artifact@v3
+        with:
+          name: server
+          path: server
+
+  E2E_Tests:
+    needs: [Build]
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 7.26.3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Install playwright browsers
+        run: pnpm exec playwright install 
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: server
+          path: server
+
+      - name: Run tests e2e
+        run: pnpm run test.e2e
