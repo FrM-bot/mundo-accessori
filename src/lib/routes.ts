@@ -1,6 +1,6 @@
 export const Routes = {
   toHome: "/",
-  toSignIn: "/sign-in",
+  toLogIn: "/log-in",
   toSignUp: "/sign-up",
   toCreateCause: "/create",
   toAuth: "/auth",
